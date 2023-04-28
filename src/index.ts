@@ -7,15 +7,19 @@ dotenv.config();
 const CHAIN_ID = 1;
 
 // mainnet
-// const provider = new providers.JsonRpcProvider(process.env.ALCHEMY_MAINNET);
-// const FLASHBOTS_ENDPOINT = 'https://relay.flashbots.net';
-// const FALLBACK_CONTRACT = '0xE07C1FA616f64205d216f8db4883e17801b80B85';
+const provider = new providers.JsonRpcProvider(process.env.ALCHEMY_MAINNET);
+const FLASHBOTS_ENDPOINT = 'https://relay.flashbots.net';
+const FALLBACK_CONTRACT = '0xE07C1FA616f64205d216f8db4883e17801b80B85';
+const WETH = '';
+const weth_amount = '';
+const weth_unwrap_data =
+	'0x2e1a7d4d00000000000000000000000000000000000000000000000000470de4df820000';
 
 // goerli
-const FALLBACK_CONTRACT = '0x06d5ECe5E37439729C3D236A711e5e4729D8c3e2';
-const FAKE_MINTER = '0x1c7eB6b9c647832998CeFdc445d9B059DbeED8C9';
-const FLASHBOTS_ENDPOINT = 'https://relay-goerli.flashbots.net';
-const provider = new providers.JsonRpcProvider(process.env.ALCHEMY_PROVIDER);
+// const FALLBACK_CONTRACT = '0x06d5ECe5E37439729C3D236A711e5e4729D8c3e2';
+// const FAKE_MINTER = '0x1c7eB6b9c647832998CeFdc445d9B059DbeED8C9';
+// const FLASHBOTS_ENDPOINT = 'https://relay-goerli.flashbots.net';
+// const provider = new providers.JsonRpcProvider(process.env.ALCHEMY_PROVIDER);
 
 if (process.env.ETH_SIGNER_KEY === undefined) {
 	console.error('Please provide ETH_SIGNER_KEY');
@@ -37,46 +41,44 @@ async function main() {
 			[
 				// mainnet
 
-				// {
-				// 	transaction: {
-				// 		chainId: CHAIN_ID,
-				// 		type: 2,
-				// 		value: BigNumber.from(0),
-				// 		data: '0x',
-				// 		gasPrice: 50000,
-				// 		maxFeePerGas: GWEI.mul(3),
-				// 		maxPriorityFeePerGas: GWEI.mul(2),
-				// 		to: FALLBACK_CONTRACT,
-				// 	},
-				// 	signer: wallet,
-				// },
-
-				// goerli
-
 				{
 					transaction: {
 						chainId: CHAIN_ID,
 						type: 2,
 						value: BigNumber.from(0),
 						data: '0x',
-						maxFeePerGas: GWEI.mul(3),
-						maxPriorityFeePerGas: GWEI.mul(2),
+						maxFeePerGas: GWEI.mul(50),
+						maxPriorityFeePerGas: GWEI.mul(40),
 						to: FALLBACK_CONTRACT,
 					},
 					signer: wallet,
 				},
-				{
-					transaction: {
-						chainId: CHAIN_ID,
-						type: 2,
-						value: ETHER.div(1000).mul(1),
-						data: '0x1249c58b',
-						maxFeePerGas: GWEI.mul(3),
-						maxPriorityFeePerGas: GWEI.mul(2),
-						to: FAKE_MINTER,
-					},
-					signer: wallet,
-				},
+				// goerli
+
+				// {
+				// 	transaction: {
+				// 		chainId: CHAIN_ID,
+				// 		type: 2,
+				// 		value: BigNumber.from(0),
+				// 		data: '0x',
+				// 		maxFeePerGas: GWEI.mul(3),
+				// 		maxPriorityFeePerGas: GWEI.mul(2),
+				// 		to: FALLBACK_CONTRACT,
+				// 	},
+				// 	signer: wallet,
+				// },
+				// {
+				// 	transaction: {
+				// 		chainId: CHAIN_ID,
+				// 		type: 2,
+				// 		value: ETHER.div(1000).mul(1),
+				// 		data: '0x1249c58b',
+				// 		maxFeePerGas: GWEI.mul(3),
+				// 		maxPriorityFeePerGas: GWEI.mul(2),
+				// 		to: FAKE_MINTER,
+				// 	},
+				// 	signer: wallet,
+				// },
 			],
 			blocknumber + 1
 		);

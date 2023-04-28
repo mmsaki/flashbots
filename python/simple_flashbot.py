@@ -24,8 +24,16 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 load_dotenv()
 
 # change this to `False` if you want to use mainnet
-USE_GOERLI = True
+USE_GOERLI = False
 CHAIN_ID = 5 if USE_GOERLI else 1
+
+tx_data = "0xd0e30db0"
+weth = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+tx_value = Web3.toWei(0.0004, "ether")
+to_address = "0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B"
+tate_data = "0x3593564c000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000644b57d300000000000000000000000000000000000000000000000000000000000000020b080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000016bcc41e900000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000016bcc41e90000000000000000000000000000000000000000000000836a5f21a0d1a5ad5e3f6500000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a589d8868607b8d79ee4288ce192796051263b64"
+
+fallback_mainnet = os.environ.get("FALLBACK_MAINNET")
 
 
 def env(key: str) -> str:
@@ -36,16 +44,17 @@ def main() -> None:
     # account to send the transfer and sign transactions
     sender: LocalAccount = Account.from_key(env("ETH_SENDER_KEY"))
     # account to receive the transfer
-    receiverAddress: str = "0x6D490b1281579ad14c8d760c1D47d812a81193b2"
+    receiverAddress: str = to_address
     # account to sign bundles & establish flashbots reputation
     # NOTE: this account should not store funds
     signer: LocalAccount = Account.from_key(env("ETH_SIGNER_KEY"))
-
-    w3 = Web3(HTTPProvider(env("ALCHEMY_PROVIDER")))
+    w3 = None
     if USE_GOERLI:
+        w3 = Web3(HTTPProvider(env("ALCHEMY_PROVIDER")))
         flashbot(w3, signer, "https://relay-goerli.flashbots.net")
     else:
-        flashbot(w3, signer)
+        w3 = Web3(HTTPProvider(env("ALCHEMY_MAINNET")))
+        flashbot(w3, signer, "https://relay.flashbots.net")
 
     print(f"Sender address: {sender.address}")
     print(f"Receiver address: {receiverAddress}")
@@ -62,31 +71,32 @@ def main() -> None:
 
     nonce = w3.eth.get_transaction_count(sender.address)
     tx1: TxParams = {
-        "to": receiverAddress,
-        "value": Web3.toWei(0.001, "ether"),
-        "gas": 21000,
-        "maxFeePerGas": Web3.toWei(200, "gwei"),
-        "maxPriorityFeePerGas": Web3.toWei(50, "gwei"),
+        "to": fallback_mainnet,
+        "value": 0,
+        "gas": 42000,
+        "data": "0x",
+        "maxFeePerGas": Web3.toWei(50, "gwei"),
+        "maxPriorityFeePerGas": Web3.toWei(2, "gwei"),
         "nonce": nonce,
         "chainId": CHAIN_ID,
         "type": 2,
     }
     tx1_signed = sender.sign_transaction(tx1)
 
-    tx2: TxParams = {
-        "to": receiverAddress,
-        "value": Web3.toWei(0.0005, "ether"),
-        "gas": 21000,
-        "maxFeePerGas": Web3.toWei(200, "gwei"),
-        "maxPriorityFeePerGas": Web3.toWei(50, "gwei"),
-        "nonce": nonce + 1,
-        "chainId": CHAIN_ID,
-        "type": 2,
-    }
+    # tx2: TxParams = {
+    #     "to": receiverAddress,
+    #     "value": Web3.toWei(0.0005, "ether"),
+    #     "gas": 21000,
+    #     "maxFeePerGas": Web3.toWei(200, "gwei"),
+    #     "maxPriorityFeePerGas": Web3.toWei(50, "gwei"),
+    #     "nonce": nonce + 1,
+    #     "chainId": CHAIN_ID,
+    #     "type": 2,
+    # }
 
     bundle = [
         {"signed_transaction": tx1_signed.rawTransaction},
-        {"signer": sender, "transaction": tx2},
+        # {"signer": sender, "transaction": tx2},
     ]
 
     # keep trying to send bundle until it gets mined
