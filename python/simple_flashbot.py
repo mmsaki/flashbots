@@ -83,20 +83,20 @@ def main() -> None:
     }
     tx1_signed = sender.sign_transaction(tx1)
 
-    # tx2: TxParams = {
-    #     "to": receiverAddress,
-    #     "value": Web3.toWei(0.0005, "ether"),
-    #     "gas": 21000,
-    #     "maxFeePerGas": Web3.toWei(200, "gwei"),
-    #     "maxPriorityFeePerGas": Web3.toWei(50, "gwei"),
-    #     "nonce": nonce + 1,
-    #     "chainId": CHAIN_ID,
-    #     "type": 2,
-    # }
+    tx2: TxParams = {
+        "to": receiverAddress,
+        "value": Web3.toWei(0.0005, "ether"),
+        "gas": 21000,
+        "maxFeePerGas": Web3.toWei(200, "gwei"),
+        "maxPriorityFeePerGas": Web3.toWei(50, "gwei"),
+        "nonce": nonce + 1,
+        "chainId": CHAIN_ID,
+        "type": 2,
+    }
 
     bundle = [
         {"signed_transaction": tx1_signed.rawTransaction},
-        # {"signer": sender, "transaction": tx2},
+        {"signer": sender, "transaction": tx2},
     ]
 
     # keep trying to send bundle until it gets mined
